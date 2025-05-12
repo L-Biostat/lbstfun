@@ -10,9 +10,8 @@
 #'
 #' @examples
 #' library(gt)
-#' library(dplyr)
 #'
-#' gt(head(mtcars)) %>%
+#' gt(head(iris)) |>
 #'   tab_bold_headers()
 #'
 #' @export

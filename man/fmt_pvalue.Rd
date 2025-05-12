@@ -69,8 +69,8 @@ library(dplyr)
 tibble(
   variable = c("A", "B", "C"),
   p_value = c(0.034, 0.0004, 0.56)
-) \%>\%
-  gt() \%>\%
+) |>
+  gt() |>
   fmt_pvalue(columns = "p_value")
 
 }

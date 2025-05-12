@@ -2,3 +2,4 @@
 
 export(fmt_pvalue)
 export(tab_bold_headers)
+export(tab_bold_pvalues)

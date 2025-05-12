@@ -22,12 +22,12 @@
 #'
 #' @export
 fmt_pvalue <- function(
-    data,
-    columns = gt::everything(),
-    rows = gt::everything(),
-    accuracy = 0.001,
-    prefix = NULL,
-    add_p = FALSE
+  data,
+  columns = gt::everything(),
+  rows = gt::everything(),
+  accuracy = 0.001,
+  prefix = NULL,
+  add_p = FALSE
 ) {
   rows <- rlang::enquo(rows)
   gt::fmt(

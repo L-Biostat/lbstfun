@@ -27,3 +27,4 @@ Config/testthat/edition: 3
 VignetteBuilder: knitr
 Depends: 
     R (>= 3.5)
+URL: https://l-biostat.github.io/lbstfun/

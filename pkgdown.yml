@@ -1,0 +1,10 @@
+pandoc: 3.1.11
+pkgdown: 2.2.0
+pkgdown_sha: ~
+articles:
+  cLDA: cLDA.html
+  ITS: ITS.html
+last_built: 2026-03-09T09:52Z
+urls:
+  reference: https://l-biostat.github.io/lbstfun/reference
+  article: https://l-biostat.github.io/lbstfun/articles

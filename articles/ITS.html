@@ -73,12 +73,8 @@ Bohyn</h4>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Packages used in the analysis</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://marginaleffects.com/" class="external-link">marginaleffects</a></span><span class="op">)</span> <span class="co"># predictions(), slopes(), hypotheses()</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span> <span class="co"># plotting</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://wilkelab.org/cowplot/" class="external-link">cowplot</a></span><span class="op">)</span> <span class="co"># plotting theme</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://easystats.github.io/see/" class="external-link">see</a></span><span class="op">)</span> <span class="co"># color palette</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span> <span class="co"># data manipulation</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span> <span class="co"># uncount()</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://forcats.tidyverse.org/" class="external-link">forcats</a></span><span class="op">)</span> <span class="co"># fct_cross()</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://grantmcdermott.com/tinyplot/" class="external-link">tinyplot</a></span><span class="op">)</span> <span class="co"># plotting</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span> <span class="co"># data manipulation</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="data-generation">Data generation<a class="anchor" aria-label="anchor" href="#data-generation"></a>
 </h2>
@@ -101,18 +97,27 @@ trajectories in the data: <code>Pre_Control</code>,
 <span>  time <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">6</span>,</span>
 <span>  exposed <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span></span>
 <span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">26</span>, <span class="fl">30</span>, <span class="fl">32</span>, <span class="fl">45</span>, <span class="fl">52</span>, <span class="fl">63</span>, <span class="fl">27</span>, <span class="fl">31</span>, <span class="fl">33</span>, <span class="fl">29</span>, <span class="fl">32</span>, <span class="fl">36</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/uncount.html" class="external-link">uncount</a></span><span class="op">(</span>weights <span class="op">=</span> <span class="fl">10</span>, .id <span class="op">=</span> <span class="st">"id"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">26</span>, <span class="fl">30</span>, <span class="fl">32</span>, <span class="fl">45</span>, <span class="fl">52</span>, <span class="fl">63</span>, <span class="fl">27</span>, <span class="fl">31</span>, <span class="fl">33</span>, <span class="fl">29</span>, <span class="fl">32</span>, <span class="fl">36</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Replicate each row 10 times and assign a subject ID</span></span>
+<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="va">df</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>, <span class="op">]</span></span>
+<span><span class="va">df</span><span class="op">$</span><span class="va">id</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>, times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span> <span class="op">/</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span>
+<span></span>
+<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="va">df</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
 <span>    outcome <span class="op">=</span> <span class="va">mean</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span>, sd <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>,</span>
-<span>    intervention <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">time</span> <span class="op">&gt;</span> <span class="fl">3</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>      <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span>levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Pre"</span>, <span class="st">"Post"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    intervention <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">time</span> <span class="op">&gt;</span> <span class="fl">3</span><span class="op">)</span>,</span>
+<span>      levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>      labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Pre"</span>, <span class="st">"Post"</span><span class="op">)</span></span>
+<span>    <span class="op">)</span>,</span>
 <span>    exposed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span></span>
 <span>      <span class="va">exposed</span>,</span>
 <span>      levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>,</span>
 <span>      labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Control"</span>, <span class="st">"Exposed"</span><span class="op">)</span></span>
 <span>    <span class="op">)</span>,</span>
-<span>    grp <span class="op">=</span> <span class="fu"><a href="https://forcats.tidyverse.org/reference/fct_cross.html" class="external-link">fct_cross</a></span><span class="op">(</span><span class="va">intervention</span>, <span class="va">exposed</span>, sep <span class="op">=</span> <span class="st">"_"</span><span class="op">)</span> <span class="co"># 4-level group variable</span></span>
+<span>    grp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/interaction.html" class="external-link">interaction</a></span><span class="op">(</span><span class="va">intervention</span>, <span class="va">exposed</span>, sep <span class="op">=</span> <span class="st">"_"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="co"># 4-level group variable</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -123,23 +128,26 @@ alongside group means to inspect the trajectory of each group across
 time and the apparent effect of the intervention. The dashed vertical
 line marks the intervention point (between time 3 and time 4).</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">df</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>exp_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">exposed</span>, <span class="st">"_"</span>, <span class="va">time</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">time</span>, y <span class="op">=</span> <span class="va">outcome</span>, color <span class="op">=</span> <span class="va">exposed</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_boxplot.html" class="external-link">geom_boxplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>group <span class="op">=</span> <span class="va">exp_time</span><span class="op">)</span>, fill <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="fl">3.5</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>group <span class="op">=</span> <span class="va">exp_time</span><span class="op">)</span>, position <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/position_dodge.html" class="external-link">position_dodge</a></span><span class="op">(</span>width <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/stat_summary.html" class="external-link">stat_summary</a></span><span class="op">(</span></span>
-<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>group <span class="op">=</span> <span class="va">grp</span><span class="op">)</span>,</span>
-<span>    geom <span class="op">=</span> <span class="st">"line"</span>,</span>
-<span>    fun <span class="op">=</span> <span class="va">mean</span>,</span>
-<span>    position <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/position_dodge.html" class="external-link">position_dodge</a></span><span class="op">(</span>width <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span></span>
-<span>  <span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_continuous</a></span><span class="op">(</span>breaks <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">see</span><span class="fu">::</span><span class="fu"><a href="https://easystats.github.io/see/reference/scale_color_material.html" class="external-link">scale_color_material</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Exposure"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Time"</span>, y <span class="op">=</span> <span class="st">"Outcome"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/theme_cowplot.html" class="external-link">theme_cowplot</a></span><span class="op">(</span><span class="fl">12</span><span class="op">)</span></span></code></pre></div>
-<p><img src="ITS_files/figure-html/data-plot-1.png" class="r-plt" alt="" width="576"></p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://grantmcdermott.com/tinyplot/man/tinyplot.html" class="external-link">plt</a></span><span class="op">(</span></span>
+<span>  <span class="va">outcome</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">grp</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">df</span>,</span>
+<span>  type <span class="op">=</span> <span class="fu"><a href="https://grantmcdermott.com/tinyplot/man/type_boxplot.html" class="external-link">type_boxplot</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"blue"</span>, <span class="st">"blue"</span>, <span class="st">"red"</span>, <span class="st">"red"</span><span class="op">)</span>,</span>
+<span>  fill <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"blue"</span>, <span class="st">"blue"</span>, <span class="st">"red"</span>, <span class="st">"red"</span><span class="op">)</span>,</span>
+<span>  xlab <span class="op">=</span> <span class="st">"Time"</span>,</span>
+<span>  ylab <span class="op">=</span> <span class="st">"Outcome"</span>,</span>
+<span>  legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"Group"</span>,</span>
+<span>    legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">"_"</span>, <span class="st">" "</span>, <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">grp</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://grantmcdermott.com/tinyplot/man/tinyplot_add.html" class="external-link">plt_add</a></span><span class="op">(</span>type <span class="op">=</span> <span class="fu"><a href="https://grantmcdermott.com/tinyplot/man/type_abline.html" class="external-link">type_vline</a></span><span class="op">(</span>v <span class="op">=</span> <span class="fl">3.5</span><span class="op">)</span>, lty <span class="op">=</span> <span class="st">"dashed"</span><span class="op">)</span></span>
+<span><span class="va">dfm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarize</a></span><span class="op">(</span><span class="va">df</span>, outcome <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">outcome</span><span class="op">)</span>, .by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">grp</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://grantmcdermott.com/tinyplot/man/tinyplot_add.html" class="external-link">plt_add</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">dfm</span>,</span>
+<span>  type <span class="op">=</span> <span class="fu"><a href="https://grantmcdermott.com/tinyplot/man/type_lines.html" class="external-link">type_lines</a></span><span class="op">(</span>dodge <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="ITS_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" alt="" width="1800"></p>
 </div>
 <div class="section level2">
 <h2 id="fit-the-model">Fit the model<a class="anchor" aria-label="anchor" href="#fit-the-model"></a>
@@ -154,17 +162,31 @@ intervention.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Group-specific intercepts and time slopes; no global intercept</span></span>
 <span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">outcome</span> <span class="op">~</span> <span class="va">grp</span> <span class="op">+</span> <span class="va">grp</span><span class="op">:</span><span class="va">time</span> <span class="op">-</span> <span class="fl">1</span>, data <span class="op">=</span> <span class="va">df</span><span class="op">)</span></span>
-<span><span class="fu">parameters</span><span class="fu">::</span><span class="fu"><a href="https://easystats.github.io/parameters/reference/model_parameters.html" class="external-link">parameters</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Parameter                 | Coefficient |   SE |         95% CI | t(112) |      p</span></span>
-<span><span class="co">#&gt; ---------------------------------------------------------------------------------</span></span>
-<span><span class="co">#&gt; grp [Pre_Control]         |       21.64 | 1.57 | [18.52, 24.75] |  13.78 | &lt; .001</span></span>
-<span><span class="co">#&gt; grp [Pre_Exposed]         |       23.78 | 1.57 | [20.67, 26.89] |  15.14 | &lt; .001</span></span>
-<span><span class="co">#&gt; grp [Post_Control]        |        8.92 | 3.68 | [ 1.62, 16.21] |   2.42 | 0.017 </span></span>
-<span><span class="co">#&gt; grp [Post_Exposed]        |       19.00 | 3.68 | [11.70, 26.30] |   5.16 | &lt; .001</span></span>
-<span><span class="co">#&gt; grp [Pre_Control] × time  |        3.48 | 0.73 | [ 2.04,  4.92] |   4.78 | &lt; .001</span></span>
-<span><span class="co">#&gt; grp [Pre_Exposed] × time  |        3.49 | 0.73 | [ 2.05,  4.93] |   4.80 | &lt; .001</span></span>
-<span><span class="co">#&gt; grp [Post_Control] × time |        8.96 | 0.73 | [ 7.52, 10.40] |  12.33 | &lt; .001</span></span>
-<span><span class="co">#&gt; grp [Post_Exposed] × time |        2.70 | 0.73 | [ 1.26,  4.15] |   3.72 | &lt; .001</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Call:</span></span>
+<span><span class="co">#&gt; lm(formula = outcome ~ grp + grp:time - 1, data = df)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Residuals:</span></span>
+<span><span class="co">#&gt;     Min      1Q  Median      3Q     Max </span></span>
+<span><span class="co">#&gt; -9.0892 -2.1472  0.1336  2.0631  8.3564 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Coefficients:</span></span>
+<span><span class="co">#&gt;                      Estimate Std. Error t value Pr(&gt;|t|)    </span></span>
+<span><span class="co">#&gt; grpPre_Control         21.636      1.571  13.777  &lt; 2e-16 ***</span></span>
+<span><span class="co">#&gt; grpPost_Control         8.916      3.683   2.421 0.017092 *  </span></span>
+<span><span class="co">#&gt; grpPre_Exposed         23.783      1.571  15.144  &lt; 2e-16 ***</span></span>
+<span><span class="co">#&gt; grpPost_Exposed        18.998      3.683   5.158 1.09e-06 ***</span></span>
+<span><span class="co">#&gt; grpPre_Control:time     3.477      0.727   4.782 5.31e-06 ***</span></span>
+<span><span class="co">#&gt; grpPost_Control:time    8.963      0.727  12.328  &lt; 2e-16 ***</span></span>
+<span><span class="co">#&gt; grpPre_Exposed:time     3.490      0.727   4.800 4.94e-06 ***</span></span>
+<span><span class="co">#&gt; grpPost_Exposed:time    2.705      0.727   3.720 0.000313 ***</span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Residual standard error: 3.251 on 112 degrees of freedom</span></span>
+<span><span class="co">#&gt; Multiple R-squared:  0.9932, Adjusted R-squared:  0.9927 </span></span>
+<span><span class="co">#&gt; F-statistic:  2052 on 8 and 112 DF,  p-value: &lt; 2.2e-16</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="estimated-marginal-means">Estimated marginal means<a class="anchor" aria-label="anchor" href="#estimated-marginal-means"></a>
@@ -253,8 +275,8 @@ the intervention).</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;           grp Estimate Std. Error     z Pr(&gt;|z|)     S 2.5 % 97.5 %</span></span>
 <span><span class="co">#&gt;  Pre_Control      3.48      0.727  4.78   &lt;0.001  19.1  2.05   4.90</span></span>
-<span><span class="co">#&gt;  Pre_Exposed      3.49      0.727  4.80   &lt;0.001  19.3  2.06   4.91</span></span>
 <span><span class="co">#&gt;  Post_Control     8.96      0.727 12.33   &lt;0.001 113.6  7.54  10.39</span></span>
+<span><span class="co">#&gt;  Pre_Exposed      3.49      0.727  4.80   &lt;0.001  19.3  2.06   4.91</span></span>
 <span><span class="co">#&gt;  Post_Exposed     2.70      0.727  3.72   &lt;0.001  12.3  1.28   4.13</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Term: time</span></span>
@@ -271,10 +293,10 @@ the intervention).</p>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Hypothesis Estimate Std. Error       z Pr(&gt;|z|)    S 2.5 % 97.5 %</span></span>
-<span><span class="co">#&gt;  Control      0.0129       1.03  0.0126     0.99  0.0 -2.00   2.03</span></span>
-<span><span class="co">#&gt;  Exposed     -6.2579       1.03 -6.0878   &lt;0.001 29.7 -8.27  -4.24</span></span>
-<span><span class="co">#&gt;  Difference  -6.2708       1.45 -4.3134   &lt;0.001 15.9 -9.12  -3.42</span></span></code></pre></div>
+<span><span class="co">#&gt;  Hypothesis Estimate Std. Error      z Pr(&gt;|z|)    S 2.5 % 97.5 %</span></span>
+<span><span class="co">#&gt;  Control       5.486       1.03  5.336   &lt;0.001 23.3  3.47   7.50</span></span>
+<span><span class="co">#&gt;  Exposed      -0.785       1.03 -0.764    0.445  1.2 -2.80   1.23</span></span>
+<span><span class="co">#&gt;  Difference   -6.271       1.45 -4.313   &lt;0.001 15.9 -9.12  -3.42</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

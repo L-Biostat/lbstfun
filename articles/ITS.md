@@ -3,12 +3,8 @@
 ``` r
 # Packages used in the analysis
 library(marginaleffects) # predictions(), slopes(), hypotheses()
-library(ggplot2) # plotting
-library(cowplot) # plotting theme
-library(see) # color palette
+library(tinyplot) # plotting
 library(dplyr) # data manipulation
-library(tidyr) # uncount()
-library(forcats) # fct_cross()
 ```
 
 ## Data generation
@@ -31,18 +27,27 @@ df <- expand.grid(
   time = 1:6,
   exposed = 0:1
 ) |>
-  mutate(mean = c(26, 30, 32, 45, 52, 63, 27, 31, 33, 29, 32, 36)) |>
-  uncount(weights = 10, .id = "id") |>
+  mutate(mean = c(26, 30, 32, 45, 52, 63, 27, 31, 33, 29, 32, 36))
+
+# Replicate each row 10 times and assign a subject ID
+df <- df[rep(seq_len(nrow(df)), each = 10), ]
+df$id <- rep(seq_len(10), times = nrow(df) / 10)
+rownames(df) <- NULL
+
+df <- df |>
   mutate(
     outcome = mean + rnorm(n = n(), sd = 3),
-    intervention = as.numeric(time > 3) |>
-      factor(levels = c(0, 1), labels = c("Pre", "Post")),
+    intervention = factor(
+      as.numeric(time > 3),
+      levels = c(0, 1),
+      labels = c("Pre", "Post")
+    ),
     exposed = factor(
       exposed,
       levels = c(0, 1),
       labels = c("Control", "Exposed")
     ),
-    grp = fct_cross(intervention, exposed, sep = "_") # 4-level group variable
+    grp = interaction(intervention, exposed, sep = "_", drop = TRUE) # 4-level group variable
   )
 ```
 
@@ -54,25 +59,28 @@ apparent effect of the intervention. The dashed vertical line marks the
 intervention point (between time 3 and time 4).
 
 ``` r
-df |>
-  mutate(exp_time = paste0(exposed, "_", time)) |>
-  ggplot(aes(x = time, y = outcome, color = exposed)) +
-  geom_boxplot(aes(group = exp_time), fill = NA) +
-  geom_vline(xintercept = 3.5, linetype = "dashed") +
-  geom_point(aes(group = exp_time), position = position_dodge(width = 0.8)) +
-  stat_summary(
-    aes(group = grp),
-    geom = "line",
-    fun = mean,
-    position = position_dodge(width = 0.8)
-  ) +
-  scale_x_continuous(breaks = 1:6) +
-  see::scale_color_material(name = "Exposure") +
-  labs(x = "Time", y = "Outcome") +
-  cowplot::theme_cowplot(12)
+plt(
+  outcome ~ time | grp,
+  data = df,
+  type = type_boxplot(),
+  col = c("blue", "blue", "red", "red"),
+  fill = c("blue", "blue", "red", "red"),
+  xlab = "Time",
+  ylab = "Outcome",
+  legend = list(
+    title = "Group",
+    legend = gsub("_", " ", unique(df$grp))
+  )
+)
+plt_add(type = type_vline(v = 3.5), lty = "dashed")
+dfm <- summarize(df, outcome = mean(outcome), .by = c(time, grp))
+plt_add(
+  data = dfm,
+  type = type_lines(dodge = 0.5)
+)
 ```
 
-![](ITS_files/figure-html/data-plot-1.png)
+![](ITS_files/figure-html/unnamed-chunk-2-1.png)
 
 ## Fit the model
 
@@ -86,17 +94,31 @@ slope change at the intervention.
 ``` r
 # Group-specific intercepts and time slopes; no global intercept
 model <- lm(outcome ~ grp + grp:time - 1, data = df)
-parameters::parameters(model)
-#> Parameter                 | Coefficient |   SE |         95% CI | t(112) |      p
-#> ---------------------------------------------------------------------------------
-#> grp [Pre_Control]         |       21.64 | 1.57 | [18.52, 24.75] |  13.78 | < .001
-#> grp [Pre_Exposed]         |       23.78 | 1.57 | [20.67, 26.89] |  15.14 | < .001
-#> grp [Post_Control]        |        8.92 | 3.68 | [ 1.62, 16.21] |   2.42 | 0.017 
-#> grp [Post_Exposed]        |       19.00 | 3.68 | [11.70, 26.30] |   5.16 | < .001
-#> grp [Pre_Control] × time  |        3.48 | 0.73 | [ 2.04,  4.92] |   4.78 | < .001
-#> grp [Pre_Exposed] × time  |        3.49 | 0.73 | [ 2.05,  4.93] |   4.80 | < .001
-#> grp [Post_Control] × time |        8.96 | 0.73 | [ 7.52, 10.40] |  12.33 | < .001
-#> grp [Post_Exposed] × time |        2.70 | 0.73 | [ 1.26,  4.15] |   3.72 | < .001
+summary(model)
+#> 
+#> Call:
+#> lm(formula = outcome ~ grp + grp:time - 1, data = df)
+#> 
+#> Residuals:
+#>     Min      1Q  Median      3Q     Max 
+#> -9.0892 -2.1472  0.1336  2.0631  8.3564 
+#> 
+#> Coefficients:
+#>                      Estimate Std. Error t value Pr(>|t|)    
+#> grpPre_Control         21.636      1.571  13.777  < 2e-16 ***
+#> grpPost_Control         8.916      3.683   2.421 0.017092 *  
+#> grpPre_Exposed         23.783      1.571  15.144  < 2e-16 ***
+#> grpPost_Exposed        18.998      3.683   5.158 1.09e-06 ***
+#> grpPre_Control:time     3.477      0.727   4.782 5.31e-06 ***
+#> grpPost_Control:time    8.963      0.727  12.328  < 2e-16 ***
+#> grpPre_Exposed:time     3.490      0.727   4.800 4.94e-06 ***
+#> grpPost_Exposed:time    2.705      0.727   3.720 0.000313 ***
+#> ---
+#> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+#> 
+#> Residual standard error: 3.251 on 112 degrees of freedom
+#> Multiple R-squared:  0.9932, Adjusted R-squared:  0.9927 
+#> F-statistic:  2052 on 8 and 112 DF,  p-value: < 2.2e-16
 ```
 
 ## Estimated marginal means
@@ -191,8 +213,8 @@ trends
 #> 
 #>           grp Estimate Std. Error     z Pr(>|z|)     S 2.5 % 97.5 %
 #>  Pre_Control      3.48      0.727  4.78   <0.001  19.1  2.05   4.90
-#>  Pre_Exposed      3.49      0.727  4.80   <0.001  19.3  2.06   4.91
 #>  Post_Control     8.96      0.727 12.33   <0.001 113.6  7.54  10.39
+#>  Pre_Exposed      3.49      0.727  4.80   <0.001  19.3  2.06   4.91
 #>  Post_Exposed     2.70      0.727  3.72   <0.001  12.3  1.28   4.13
 #> 
 #> Term: time
@@ -211,8 +233,8 @@ hypotheses(
   )
 )
 #> 
-#>  Hypothesis Estimate Std. Error       z Pr(>|z|)    S 2.5 % 97.5 %
-#>  Control      0.0129       1.03  0.0126     0.99  0.0 -2.00   2.03
-#>  Exposed     -6.2579       1.03 -6.0878   <0.001 29.7 -8.27  -4.24
-#>  Difference  -6.2708       1.45 -4.3134   <0.001 15.9 -9.12  -3.42
+#>  Hypothesis Estimate Std. Error      z Pr(>|z|)    S 2.5 % 97.5 %
+#>  Control       5.486       1.03  5.336   <0.001 23.3  3.47   7.50
+#>  Exposed      -0.785       1.03 -0.764    0.445  1.2 -2.80   1.23
+#>  Difference   -6.271       1.45 -4.313   <0.001 15.9 -9.12  -3.42
 ```

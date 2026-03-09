@@ -2,10 +2,10 @@
 
 ``` r
 # Packages used in the analysis
-library(nlme)            # GLS + correlation / variance structures
-library(dplyr)           # data manipulation
-library(marginaleffects) # avg_predictions(), plot_predictions(), hypotheses()
-library(ggplot2)         # plotting theme used by plot_predictions
+library(nlme) # GLS + correlation / variance structures
+library(marginaleffects) # avg_predictions(), hypotheses()
+# library(ggplot2)         # plotting
+library(tinyplot)
 ```
 
 ``` r
@@ -90,23 +90,33 @@ treatment group and plot them.
 ``` r
 # Obtain average predictions at each time point for each treatment group
 p <- avg_predictions(fit, by = c("time", "trt"))
-insight::format_table(p)
-#>   time trt estimate std.error statistic p.value s.value           conf.int  df
-#> 1    0   1  1694.94     35.71     47.47  < .001     Inf [1624.95, 1764.92] Inf
-#> 2    0   2  1694.94     35.71     47.47  < .001     Inf [1624.95, 1764.92] Inf
-#> 3    1   1  1804.22     40.40     44.66  < .001     Inf [1725.04, 1883.40] Inf
-#> 4    1   2  1751.62     40.55     43.20  < .001     Inf [1672.15, 1831.09] Inf
-#> 5    2   1  1790.63     38.81     46.13  < .001     Inf [1714.56, 1866.70] Inf
-#> 6    2   2  1734.86     38.83     44.67  < .001     Inf [1658.75, 1810.97] Inf
+p
+#> 
+#>  time trt Estimate Std. Error    z Pr(>|z|)   S 2.5 % 97.5 %
+#>     0   1     1695       35.7 47.5   <0.001 Inf  1625   1765
+#>     0   2     1695       35.7 47.5   <0.001 Inf  1625   1765
+#>     1   1     1804       40.4 44.7   <0.001 Inf  1725   1883
+#>     1   2     1752       40.5 43.2   <0.001 Inf  1672   1831
+#>     2   1     1791       38.8 46.1   <0.001 Inf  1715   1867
+#>     2   2     1735       38.8 44.7   <0.001 Inf  1659   1811
+#> 
+#> Type: response
 ```
 
 ``` r
 # Plot these predictions
-ggplot(p, aes(x = time, y = estimate, color = trt)) +
-  geom_line(aes(group = trt)) +
-  geom_point(size = 2) +
-  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.1) +
-  theme_classic()
+plt(
+  estimate ~ time | trt,
+  data = p,
+  ymin = conf.low,
+  ymax = conf.high,
+  type = type_lines(dodge = 0.05),
+  col = c("#0050ef", "#e51400"),
+  legend = list(title = "Treatement"),
+  xlab = "Time",
+  ylab = "Estimate"
+)
+plt_add(type = type_errorbar(dodge = 0.05))
 ```
 
 ![](cLDA_files/figure-html/unnamed-chunk-6-1.png)
@@ -148,7 +158,11 @@ hypotheses(p, hypothesis = "(b6 - b2) = (b5 - b1)")
 cor_matrix <- corMatrix(fit$modelStruct$corStruct, corr = TRUE)
 
 # Extract variance weights (relative to base level)
-var_weights <- coef(fit$modelStruct$varStruct, unconstrained = FALSE, allCoef = TRUE)
+var_weights <- coef(
+  fit$modelStruct$varStruct,
+  unconstrained = FALSE,
+  allCoef = TRUE
+)
 
 # Get base residual variance
 base_var <- fit$sigma^2

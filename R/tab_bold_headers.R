@@ -19,7 +19,7 @@ tab_bold_headers <- function(data, spanners = TRUE) {
   out <- gt::tab_style(
     data,
     style = gt::cell_text(weight = "bold"),
-    locations = gt::cells_column_labels(everything())
+    locations = gt::cells_column_labels(gt::everything())
   )
 
   if (spanners) {

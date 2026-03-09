@@ -15,19 +15,16 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   message = FALSE,
-  warning = FALSE
+  warning = FALSE,
+  dpi = 300
 )
 ```
 
 ```{r setup}
 # Packages used in the analysis
 library(marginaleffects) # predictions(), slopes(), hypotheses()
-library(ggplot2) # plotting
-library(cowplot) # plotting theme
-library(see) # color palette
+library(tinyplot) # plotting
 library(dplyr) # data manipulation
-library(tidyr) # uncount()
-library(forcats) # fct_cross()
 ```
 
 ## Data generation
@@ -45,18 +42,27 @@ df <- expand.grid(
   time = 1:6,
   exposed = 0:1
 ) |>
-  mutate(mean = c(26, 30, 32, 45, 52, 63, 27, 31, 33, 29, 32, 36)) |>
-  uncount(weights = 10, .id = "id") |>
+  mutate(mean = c(26, 30, 32, 45, 52, 63, 27, 31, 33, 29, 32, 36))
+
+# Replicate each row 10 times and assign a subject ID
+df <- df[rep(seq_len(nrow(df)), each = 10), ]
+df$id <- rep(seq_len(10), times = nrow(df) / 10)
+rownames(df) <- NULL
+
+df <- df |>
   mutate(
     outcome = mean + rnorm(n = n(), sd = 3),
-    intervention = as.numeric(time > 3) |>
-      factor(levels = c(0, 1), labels = c("Pre", "Post")),
+    intervention = factor(
+      as.numeric(time > 3),
+      levels = c(0, 1),
+      labels = c("Pre", "Post")
+    ),
     exposed = factor(
       exposed,
       levels = c(0, 1),
       labels = c("Control", "Exposed")
     ),
-    grp = fct_cross(intervention, exposed, sep = "_") # 4-level group variable
+    grp = interaction(intervention, exposed, sep = "_", drop = TRUE) # 4-level group variable
   )
 ```
 
@@ -65,26 +71,26 @@ df <- expand.grid(
 Before fitting a model, it is useful to visualize the raw data alongside group means to inspect the trajectory of each group across time and the apparent effect of the intervention.
 The dashed vertical line marks the intervention point (between time 3 and time 4).
 
-```{r data-plot}
-#| class.source: "fold-hide"
-#| fig.width: 6
-
-df |>
-  mutate(exp_time = paste0(exposed, "_", time)) |>
-  ggplot(aes(x = time, y = outcome, color = exposed)) +
-  geom_boxplot(aes(group = exp_time), fill = NA) +
-  geom_vline(xintercept = 3.5, linetype = "dashed") +
-  geom_point(aes(group = exp_time), position = position_dodge(width = 0.8)) +
-  stat_summary(
-    aes(group = grp),
-    geom = "line",
-    fun = mean,
-    position = position_dodge(width = 0.8)
-  ) +
-  scale_x_continuous(breaks = 1:6) +
-  see::scale_color_material(name = "Exposure") +
-  labs(x = "Time", y = "Outcome") +
-  cowplot::theme_cowplot(12)
+```{r, fig.width=6, fig.height=4, dev="svg"}
+plt(
+  outcome ~ time | grp,
+  data = df,
+  type = type_boxplot(),
+  col = c("blue", "blue", "red", "red"),
+  fill = c("blue", "blue", "red", "red"),
+  xlab = "Time",
+  ylab = "Outcome",
+  legend = list(
+    title = "Group",
+    legend = gsub("_", " ", unique(df$grp))
+  )
+)
+plt_add(type = type_vline(v = 3.5), lty = "dashed")
+dfm <- summarize(df, outcome = mean(outcome), .by = c(time, grp))
+plt_add(
+  data = dfm,
+  type = type_lines(dodge = 0.5)
+)
 ```
 
 ## Fit the model
@@ -96,7 +102,7 @@ The `grp:time` interaction then gives each group its own rate of change over tim
 ```{r}
 # Group-specific intercepts and time slopes; no global intercept
 model <- lm(outcome ~ grp + grp:time - 1, data = df)
-parameters::parameters(model)
+summary(model)
 ```
 
 ## Estimated marginal means

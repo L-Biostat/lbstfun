@@ -13,16 +13,17 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   message = FALSE,
-  warning = FALSE
+  warning = FALSE,
+  dpi = 300
 )
 ```
 
 ```{r setup}
 # Packages used in the analysis
-library(nlme)            # GLS + correlation / variance structures
-library(dplyr)           # data manipulation
-library(marginaleffects) # avg_predictions(), plot_predictions(), hypotheses()
-library(ggplot2)         # plotting theme used by plot_predictions
+library(nlme) # GLS + correlation / variance structures
+library(marginaleffects) # avg_predictions(), hypotheses()
+# library(ggplot2)         # plotting
+library(tinyplot)
 ```
 
 ```{r}
@@ -89,19 +90,27 @@ We first compute the predicted values at each time point for each treatment grou
 ```{r}
 # Obtain average predictions at each time point for each treatment group
 p <- avg_predictions(fit, by = c("time", "trt"))
-insight::format_table(p)
+p
 ```
 
 ```{r}
 #| fig.width: 7
 #| fig.height: 4
+#| dev: "svg"
 
 # Plot these predictions
-ggplot(p, aes(x = time, y = estimate, color = trt)) +
-  geom_line(aes(group = trt)) +
-  geom_point(size = 2) +
-  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.1) +
-  theme_classic()
+plt(
+  estimate ~ time | trt,
+  data = p,
+  ymin = conf.low,
+  ymax = conf.high,
+  type = type_lines(dodge = 0.05),
+  col = c("#0050ef", "#e51400"),
+  legend = list(title = "Treatement"),
+  xlab = "Time",
+  ylab = "Estimate"
+)
+plt_add(type = type_errorbar(dodge = 0.05))
 ```
 
 To test specific hypotheses, we can use the `hypotheses()` function.
@@ -128,7 +137,11 @@ hypotheses(p, hypothesis = "(b6 - b2) = (b5 - b1)")
 cor_matrix <- corMatrix(fit$modelStruct$corStruct, corr = TRUE)
 
 # Extract variance weights (relative to base level)
-var_weights <- coef(fit$modelStruct$varStruct, unconstrained = FALSE, allCoef = TRUE)
+var_weights <- coef(
+  fit$modelStruct$varStruct,
+  unconstrained = FALSE,
+  allCoef = TRUE
+)
 
 # Get base residual variance
 base_var <- fit$sigma^2

@@ -49,8 +49,8 @@ difference between adjacent values.
 Applied to rescaled data.}
 
 \item{prefix}{A character vector of length 3 giving the prefixes to
-put in front of numbers. The default values are \code{c("p<", "p=", "p>")}
-if \code{add_p} is \code{TRUE} and \code{c("<", "", ">")} if \code{FALSE}.}
+put in front of numbers. The default values are \code{c("<", "", ">")}
+if \code{add_p} is \code{TRUE} and \code{c("p<", "p=", "p>")} if \code{FALSE}.}
 
 \item{add_p}{Add "p=" before the value?}
 }

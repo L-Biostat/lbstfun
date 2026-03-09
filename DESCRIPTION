@@ -20,9 +20,19 @@ Imports:
     scales
 RoxygenNote: 7.3.2
 Suggests: 
+    cowplot,
+    dplyr,
+    forcats,
+    ggplot2,
+    insight,
     knitr,
+    marginaleffects,
+    nlme,
+    parameters,
     rmarkdown,
-    testthat (>= 3.0.0)
+    see,
+    testthat (>= 3.0.0),
+    tidyr
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Depends: 
